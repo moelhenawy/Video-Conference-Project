@@ -30,10 +30,15 @@ server.on("connection", (ws, req) => {
           ws.room = data.room;
           ws.user = data.user || `User-${Math.floor(Math.random() * 1000)}`;
           console.log(`👤 ${ws.user} joined room "${ws.room}". Total participants: ${rooms[ws.room].length}`);
- 
+
+          // ✅ Assign role to client based on join order
+          const role = rooms[data.room].length === 1 ? "wait" : "offer";
+          ws.send(JSON.stringify({ type: "room-role", role }));
+
           const existingUsers = rooms[data.room]
             .filter(client => client !== ws && client.readyState === WebSocket.OPEN)
             .map(client => client.user);
+
           existingUsers.forEach(user => {
             ws.send(JSON.stringify({ type: "new-user", user }));
           });
