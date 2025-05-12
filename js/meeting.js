@@ -133,16 +133,19 @@ ws.onmessage = async (message) => {
 
     switch (data.type) {
       case "new-user":
-        console.log(`✨ New user joined: ${data.user}`);
-        if (data.user !== name) {
-          addParticipant(data.user);
-          if (localStream) {
-            await createOffer(data.user);
-          } else {
-            console.warn("⚠️ Local stream not ready when new user joined.");
-          }
-        }
-        break;
+  if (data.user !== name) {
+    console.log(`✨ New user joined: ${data.user}`);
+    addParticipant(data.user);
+
+    // فقط الطرف الذي اسمه أبجدياً أصغر يبدأ العرض
+    if (name < data.user) {
+      console.log(`📞 I (${name}) will initiate offer to ${data.user}`);
+      await createOffer(data.user);
+    } else {
+      console.log(`⏳ I (${name}) will wait for offer from ${data.user}`);
+    }
+  }
+  break;
 
       case "offer":
         console.log(`📨 Offer received from ${data.user}`);
