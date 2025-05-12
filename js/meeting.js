@@ -226,7 +226,7 @@ async function createPeer(user) {
   peer.onicecandidate = (event) => {
     if (event.candidate) {
       console.log(`🧊 Sending ICE candidate to ${user}:`, event.candidate);
-      ws.send(JSON.stringify({ type: "candidate", candidate: event.candidate, room, user }));
+     ws.send(JSON.stringify({ type: "candidate", candidate: event.candidate, room, user: name, to: user }));
     } else {
       console.log(`🏁 All ICE candidates sent for ${user}`);
     }
@@ -275,7 +275,8 @@ async function createOffer(user) {
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
     console.log(`✅ Offer created and set for ${user}. New signaling state:`, peer.signalingState);
-    ws.send(JSON.stringify({ type: "offer", offer, room, user: name }));
+   ws.send(JSON.stringify({ type: "offer", offer, room, user: name, to: user }));
+
   } catch (e) {
     console.error("❌ Error creating offer:", e.message, e.stack);
   }
@@ -292,7 +293,8 @@ async function createAnswer(offer, user) {
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
     console.log(`✅ Answer created and set for ${user}. New signaling state:`, peer.signalingState);
-    ws.send(JSON.stringify({ type: "answer", answer, room, user: name }));
+   ws.send(JSON.stringify({ type: "offer", offer, room, user: name, to: user }));
+
   } catch (e) {
     console.error("❌ Error creating answer:", e.message, e.stack);
   }
