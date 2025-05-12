@@ -41,20 +41,38 @@ server.on("connection", (ws, req) => {
           broadcast(ws, data.room, { type: "new-user", user: ws.user });
           break;
 
-        case "offer":
-          console.log(`📢 Broadcasting offer from ${ws.user} in room "${data.room}"`);
-          broadcast(ws, data.room, { type: "offer", offer: data.offer, user: ws.user, room: data.room });
+         case "offer":
+          console.log(`📤 Sending offer from ${ws.user} to ${data.to} in room "${data.room}"`);
+          sendToUser(ws, data.room, data.to, {
+            type: "offer",
+            offer: data.offer,
+            user: ws.user,
+            room: data.room
+          });
           break;
 
-        case "answer":
-          console.log(`📢 Broadcasting answer from ${ws.user} in room "${data.room}"`);
-          broadcast(ws, data.room, { type: "answer", answer: data.answer, user: ws.user, room: data.room });
+
+         case "answer":
+          console.log(`📤 Sending answer from ${ws.user} to ${data.to} in room "${data.room}"`);
+          sendToUser(ws, data.room, data.to, {
+            type: "answer",
+            answer: data.answer,
+            user: ws.user,
+            room: data.room
+          });
           break;
+
 
         case "candidate":
-          console.log(`📢 Broadcasting candidate from ${ws.user} in room "${data.room}"`);
-          broadcast(ws, data.room, { type: "candidate", candidate: data.candidate, user: ws.user, room: data.room });
+          console.log(`📤 Sending candidate from ${ws.user} to ${data.to} in room "${data.room}"`);
+          sendToUser(ws, data.room, data.to, {
+            type: "candidate",
+            candidate: data.candidate,
+            user: ws.user,
+            room: data.room
+          });
           break;
+
 
         case "chat":
           console.log(`📢 Broadcasting chat message from ${ws.user} in room "${data.room}"`);
@@ -87,6 +105,17 @@ server.on("connection", (ws, req) => {
     clients.forEach(client => {
       if (client !== sender && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(data));
+          function sendToUser(sender, room, targetUser, data) {
+    const clients = rooms[room] || [];
+    const target = clients.find(client => client.user === targetUser);
+    if (target && target.readyState === WebSocket.OPEN) {
+      target.send(JSON.stringify(data));
+      console.log(`📨 Message sent to ${targetUser}`);
+    } else {
+      console.warn(`⚠️ Target user ${targetUser} not found in room "${room}"`);
+    }
+  }
+
       }
     });
   }
